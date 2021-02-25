@@ -18,41 +18,51 @@ var gDebugMode = false;
 
 var drawFunction;
 var images = [];
+
 var assets = ['pink_brick.jpg', 'pink_door.png', 'hanging_plant.png', 'drape.png', 'grass_stars.png', 
 			  'pink_tile.jpg', 'couch.png', 'bookcase.png', 'barbie_pool.png', 'float.png', 
 			  'tile.png', 'plant.png', 'bathtub.png', 'mirror.png', 'simple.jpg', 
 			  'kitchen_set.png', 'fridge.png', 'mattress.png', '1200px-GameCube-Set.png', 'white_tile.jpeg',
 			  'white_door.png', "vine.png", 'vine_v2.png'];
+
+var instructions = ["+ Hit [ENTER] to enter", "+ Use your arrow keys to", "  navigate through each", "  room"]
+
 var eOffset = 100;
 var origin = 0;
 var tileOffset = 235;
+var gHover = 0;
+var hoverSpeed = .25;
+var trianglePoint = 15;
+var triangleSides = 50;
+var triangleOffset = 20;
 
 // preloading all assests
 function preload() {
-  for (var i = 0; i < assets.length; i++) {
-    images[i] = loadImage('assets/' + assets[i]);
-  }
+	for (var i = 0; i < assets.length; i++) {
+		images[i] = loadImage('assets/' + assets[i]);
+	}
 
-  print("Finished Preloading Images");
+	print("Finished Preloading Images");
 }
 
 // Setup code goes here
 function setup() {
-  createCanvas(600, 600);
+	createCanvas(600, 600);
 
-  textSize(40);
-  textAlign(CENTER);
+	textSize(40);
+	textAlign(CENTER);
 
-  // assign to the Entrance as the initial start page
-  drawFunction = drawEntrance;
+	// assign to the Entrance as the initial start page
+	drawFunction = drawEntrance;
 
-  print("Finished Setup");
+	print("Finished Setup");
  }
 
 // Draw code goes here
 function draw() {
 	background(0);
   	drawFunction();
+  	drawHover();
   	if (gDebugMode == true) {
   		drawDebugInfo();
  	}
@@ -67,14 +77,27 @@ drawEntrance = function() {
 
 	// front door and stairs
 	image(images[1], width / 2, height / 2);
-	image(images[4], width/2, height + eOffset + 15)
+	image(images[4], width / 2, height + eOffset + 15)
 	
 	// hanging plants (3 total)
 	image(images[3], width / 2,  origin + eOffset + (eOffset / 4));
-
 	imageMode(CORNER);
 	image(images[2], eOffset,  origin);
 	image(images[2], width - (eOffset * 2),  origin);
+
+	// hit text
+	fill(247, 141, 189, 200)
+	noStroke();
+
+	rect(eOffset * 4 - 10, eOffset * 3 - 18, eOffset * 2, eOffset);
+
+	textAlign(LEFT);
+	textSize(16);
+	fill(255);
+	for (var i = 0; i < instructions.length; i++) {
+		text(instructions[i], eOffset * 4, eOffset * (3 + (i * .25)));
+	}
+
 }
 
 // heres the hallway --DONE
@@ -89,7 +112,7 @@ drawHallWay = function() {
 	// floor tiles
 	imageMode(CORNER);
 	for (var i = 0; i < 3; i++) {
-		image(images[19], i * 175, 390);
+		image(images[19], i * 175, (eOffset * 4) - 10);
 	}
 
 	// hallway walls
@@ -113,6 +136,17 @@ drawHallWay = function() {
 	drawArrow('e');
 	drawArrow('s');
 	drawArrow('w');
+
+	// hint
+	fill(255);
+	noStroke();
+	rect(width - (eOffset * 2.5) - 15, height - eOffset / 4 - 18, eOffset * 4, eOffset / 4);
+
+	textSize(16);
+	fill(0);
+	textAlign(LEFT);
+	text("Hit ENTER to go back to Entrance.", width - (eOffset * 2.5), height - eOffset / 4);
+	
 }
 
 // heres the bed room --DONE
@@ -138,12 +172,6 @@ drawBedRoom = function() {
 	drawArrow('e');
 }
 
-// heres the void
-drawInstructions = function() {
-	// TODO add the picture of the void 
-	// BONUS find a couple of pngs and slap them on
-}
-
 // heres the bathroom --DONE
 drawBathroom = function() {
 	fill("#D6D1D1");
@@ -158,7 +186,7 @@ drawBathroom = function() {
 	image(images[11], 279, -130);
 
 	// bathtube
-	image(images[12], 201, 300);
+	image(images[12], eOffset * 2, eOffset * 3);
 
 	// mirror
 	image(images[13], 34, 11);
@@ -177,7 +205,7 @@ drawPool = function() {
 	image(images[8],  eOffset * -1, origin);
 
 	// pool floaty
-	image(images[9], eOffset * 4, 415);
+	image(images[9], eOffset * 4, (eOffset * 4) + 15);
 
 	// draw arrows
 	drawArrow('s');
@@ -295,21 +323,22 @@ function keyPressed() {
 // drawArrow() takes in an argument side and will draw an arrow on that side of the board
 // * restricted to (w)est, (e)ast, (n)orth, (s)outh
 function drawArrow(side) {
+	stroke(0);
 	switch(side) {
 		case 'w':
-			triangle(15, width/2, 50, width/2 + 20, 50, width/2 - 20);
+			triangle(trianglePoint + gHover, width / 2, triangleSides + gHover, width / 2 + triangleOffset, triangleSides + gHover, width / 2 - triangleOffset);
 			break;
 		case 'e':
-			triangle(width - 15, width/2, width - 50, width/2 + 20, width - 50, width/2 - 20);
+			triangle(width - trianglePoint - gHover, width / 2, width - triangleSides - gHover, width / 2 + triangleOffset, width - triangleSides - gHover, width / 2 - triangleOffset);
 			break;
 		case 'n':
-			triangle(height/2, 15, height/2 + 20, 50, height/2 - 20, 50);
+			triangle(height / 2, trianglePoint + gHover, height / 2 + triangleOffset, triangleSides + gHover, height / 2 - triangleOffset, triangleSides + gHover);
 			break;
 		case 's':
-			triangle(height/2, height - 15, height/2 + 20, height - 50, height/2 - 20, height - 50);
+			triangle(height / 2, height - trianglePoint - gHover, height / 2 + triangleOffset, height - triangleSides - gHover, height / 2 - triangleOffset, height - triangleSides - gHover);
 			break;
 	}
-
+	
 }
 
 // drawVertexShape() made this function just to make the other functions look cleaner 
@@ -348,10 +377,19 @@ function drawVertexShape(room) {
 
 // drawDebugInfo() just used for debugging when needed
 function drawDebugInfo() {
-  fill(0);
-  noStroke();
-  text("X: " + mouseX + "   Y: " + mouseY, 200, 40);
-  stroke(0);
+	fill(0);
+	noStroke();
+	text("X: " + mouseX + "   Y: " + mouseY, 200, 40);
+	stroke(0);
+}
+
+// drawHover() animation to hover elements updated
+function drawHover() {
+	gHover = gHover + hoverSpeed;
+
+	if (gHover > 10 || gHover < -10) {
+		hoverSpeed = hoverSpeed * -1;
+	}
 }
 
 
